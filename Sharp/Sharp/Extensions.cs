@@ -20,6 +20,31 @@ namespace Sharp
             return newImage;
         }
 
+        public static SizeF Resized(this IElement Element, float MaxWidth, float MaxHeigt)
+        {
+            var ElSize = Element.GetSize();
+            var ratioX = MaxWidth / ElSize.Width;
+            var ratioY = MaxHeigt / ElSize.Height;
+            var ratio = Math.Min(ratioX, ratioY);
+
+            var newWidth = ElSize.Width * ratio;
+            var newHeight = ElSize.Height * ratio;
+
+            return new SizeF(newWidth, newHeight);
+        }
+
+        public static SizeF ResizeSize(this SizeF Size, float MaxWidth, float MaxHeigt)
+        {
+            var ratioX = MaxWidth / Size.Width;
+            var ratioY = MaxHeigt / Size.Height;
+            var ratio = Math.Min(ratioX, ratioY);
+
+            var newWidth = Size.Width * ratio;
+            var newHeight = Size.Height * ratio;
+
+            return new SizeF(newWidth, newHeight);
+        }
+
         public static Image ScaleImageByWidth(this Image imgToResize, float width)
         {
             int sourceWidth = imgToResize.Width;

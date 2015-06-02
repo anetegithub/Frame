@@ -14,7 +14,8 @@ namespace Sharp
             Row r1 = new Row(),
                 r2 = new Row();
 
-            Column c1 = new Column();
+            Column c1 = new Column(),
+                c2 = new Column();
 
             Picture p1 = new Picture("0.jpg"),
                    p2 = new Picture("1.jpg"),
@@ -23,11 +24,12 @@ namespace Sharp
                    p5 = new Picture("4.jpg"),
                    p6 = new Picture("5.jpg");
 
-            r1.Add(p1).Add(p2).Add(p3);
-            //c1.Add(p2).Add(p4).Add(r2);
-            //r2.Add(p5).Add(p6);
+            r1.Add(p1).Add(c1).Add(p3);
+            c1.Add(p2).Add(p4).Add(r2);
+            r2.Add(p5).Add(c2).Add(p6);
+            c2.Add(p1).Add(p3);
 
-            Canvas.Draw(r1, 2000, new Canvas.Padding(0, 0, 0, 0),x=>
+            Canvas.Draw(r1, 3000, new Canvas.Padding(0, 0, 0, 0),x=>
             {
                 if (x)
                     Console.WriteLine("Well done");
