@@ -187,16 +187,16 @@ namespace Sharp
                             MinHeightInThisRow = El.GetResize().Height;
 
                 float SumOfResizedWidth = 0,
-                    returnHeight = 0;
+                    HeighOfAllImages = 0;
 
                 foreach (var El in this)
                 {
                     if (El.GetTag() == ElementType.Content)
                     {
                         var img = El.GetImage();
-                        img = img.ScaleImage(int.MaxValue, MinHeightInThisRow);
-                        returnHeight = img.Height;
+                        img = img.ScaleImage(int.MaxValue, MinHeightInThisRow);                        
                         SumOfResizedWidth += img.Width;
+                        HeighOfAllImages = img.Height;
                     }
                     else
                     {
@@ -204,7 +204,7 @@ namespace Sharp
                     }
                 }
 
-                return new SizeF(SumOfResizedWidth, returnHeight);
+                return new SizeF(SumOfResizedWidth, HeighOfAllImages);
             }
             if (_ElementType == ElementType.Column)
             {
@@ -219,13 +219,15 @@ namespace Sharp
                         if (El.GetResize().Width < MinWidthInThisColumn || MinWidthInThisColumn == 0)
                             MinWidthInThisColumn = El.GetResize().Width;
 
-                float SumOfResizedHeight = 0;
+                float SumOfResizedHeight = 0,
+                    WidthOfAllImages = 0;
 
                 foreach (var El in this)
                     if (El.GetTag() == ElementType.Content)
                     {
                         var img = El.GetImage();
                         img = img.ScaleImage(MinWidthInThisColumn, int.MaxValue);
+                        WidthOfAllImages = img.Width;
                         SumOfResizedHeight += img.Height;
                     }
                     else
@@ -233,7 +235,7 @@ namespace Sharp
                         SumOfResizedHeight += El.GetResize().Height;
                     }
 
-                return new SizeF(MinWidthInThisColumn, SumOfResizedHeight);
+                return new SizeF(WidthOfAllImages, SumOfResizedHeight);
             }
             if (_ElementType == ElementType.Content)
             {

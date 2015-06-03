@@ -14,31 +14,22 @@ namespace Sharp
         {
             bool result = await Task<bool>.Run(() =>
             {
-                float SumResizedWidth = 0;
-                int MinHeightInThisRow = 0;
+                float maxWidth = Element.GetResize().Width,
+                maxHeight = Element.GetResize().Height;                
 
-                Size Max = new Size(Width, int.MaxValue);
-
-                foreach (var El in Element)
-                    if (El.GetSize().Height < MinHeightInThisRow || MinHeightInThisRow == 0)
-                        MinHeightInThisRow = El.GetSize().Height;
-
-                foreach (var El in Element)
-                    SumResizedWidth += El.Resized(int.MaxValue, MinHeightInThisRow).Width;
-
-                var Multiple = Width / SumResizedWidth;
+                GC.Collect();
 
                 int Height = Width;// (int)(MinHeightInThisRow * Multiple);
 
-                Bitmap canvas = new Bitmap(Width*5,Height*5 );
+                Bitmap canvas = new Bitmap((int)maxWidth, (int)maxWidth);
                 Graphics context = Graphics.FromImage(canvas);
 
-                context.FillRectangle(Brushes.Orange, new RectangleF(0, 0, Width, Height));
-
-                //drawimages3(Element, context, new SizeF(Width, Height), new RectangleF(), Padding);
+                context.FillRectangle(Brushes.Orange, new RectangleF(0, 0, Width, Height));                
                 drawimages(Element, context, new SizeF(Width, Height), new RectangleF());
 
-                canvas.Save("result.jpg");
+                var img = canvas.ScaleImage(Width, int.MaxValue);
+
+                img.Save("result.jpg");
 
                 return true;
             });
@@ -157,7 +148,10 @@ namespace Sharp
                     if (El.GetTag() == ElementType.Content)
                     {
                         var img = El.GetImage();
-                        img = img.ScaleImage(Limit.Width, MinHeightInThisRow);
+                        img = img.ScaleImage(int.MaxValue, MinHeightInThisRow);
+
+                        GC.Collect();
+
                         Context.DrawImage(img, Pos.X, Pos.Y, img.Width, img.Height);
                         ReturnY = img.Height;
                         Pos.X += img.Width;
@@ -190,6 +184,9 @@ namespace Sharp
                     {
                         var img = El.GetImage();
                         img = img.ScaleImage(MinWidthInThisColumn, int.MaxValue);
+
+                        GC.Collect();
+
                         Context.DrawImage(img, Pos.X, Pos.Y, img.Width, img.Height);
                         ReturnX = img.Width;
                         Pos.Y += img.Height;

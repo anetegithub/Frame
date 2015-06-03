@@ -63,6 +63,6 @@ namespace Sharp
             g.Dispose();
 
             return (Image)b;
-        }
+        }        
     }
 }
