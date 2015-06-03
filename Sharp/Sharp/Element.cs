@@ -200,7 +200,9 @@ namespace Sharp
                     }
                     else
                     {
-                        SumOfResizedWidth += El.GetResize().Width;
+                        var resize = El.GetResize();
+                        SumOfResizedWidth += resize.Width;
+                        HeighOfAllImages = resize.Height;
                     }
                 }
 
@@ -232,7 +234,9 @@ namespace Sharp
                     }
                     else
                     {
-                        SumOfResizedHeight += El.GetResize().Height;
+                        var resize= El.GetResize();
+                        SumOfResizedHeight += resize.Height;
+                        WidthOfAllImages = resize.Width;
                     }
 
                 return new SizeF(WidthOfAllImages, SumOfResizedHeight);

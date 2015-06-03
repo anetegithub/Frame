@@ -32,7 +32,7 @@ namespace Sharp
 
         static void Main(string[] args)
         {
-            Canvas.Draw(Example1HALF(),3000, new Canvas.Padding(0, 0, 0, 0),x=>
+            Canvas.Draw(Example1HALF(),1000, new Canvas.Padding(0, 0, 0, 0),x=>
             {
                 if (x)
                     Console.WriteLine("Well done");
@@ -83,10 +83,9 @@ namespace Sharp
         static IElement Example1HALF()
         {
             r1.Add(p1).Add(c1).Add(p5);
-            c1.Add(r2).Add(p3);
-            r2.Add(p4).Add(c2);
-            c2.Add(r3).Add(p2);
-            r3.Add(p6).Add(p3);
+            c1.Add(r2);//.Add(r3);
+
+            r2.Add(p3).Add(p3);
 
             return r1;
         }

@@ -21,7 +21,7 @@ namespace Sharp
 
                 int Height = Width;// (int)(MinHeightInThisRow * Multiple);
 
-                Bitmap canvas = new Bitmap((int)maxWidth, (int)maxWidth);
+                Bitmap canvas = new Bitmap((int)maxWidth, (int)maxWidth, 0, System.Drawing.Imaging.PixelFormat.Format16bppRgb565, IntPtr.Zero);
                 Graphics context = Graphics.FromImage(canvas);
 
                 context.FillRectangle(Brushes.Orange, new RectangleF(0, 0, Width, Height));                
@@ -135,10 +135,10 @@ namespace Sharp
                 float MinHeightInThisRow = 0;
 
                 foreach (var El in Element)
-                    if (El.GetTag()!= ElementType.Content && (El.GetResize().Height < MinHeightInThisRow || MinHeightInThisRow == 0))
+                    if (El.GetTag() != ElementType.Content && (El.GetResize().Height < MinHeightInThisRow || MinHeightInThisRow == 0))
                         MinHeightInThisRow = El.GetResize().Height;
-                
-                if (MinHeightInThisRow==0)
+
+                if (MinHeightInThisRow == 0)
                     foreach (var El in Element)
                         if (El.GetResize().Height < MinHeightInThisRow || MinHeightInThisRow == 0)
                             MinHeightInThisRow = El.GetResize().Height;
@@ -158,17 +158,19 @@ namespace Sharp
                     }
                     else
                     {
-                        Pos.X += drawimages(El, Context, Limit, Pos).X;
+                        var returned = drawimages(El, Context, Limit, Pos);
+                        Pos.X += returned.X;
+                        ReturnY += (int)returned.Y;
                     }
                 }
 
-                return new RectangleF() { Y = ReturnY };
+                return new RectangleF() { Y = ReturnY, X = Pos.X };
             }
             else if (Element.GetTag() == ElementType.Column)
             {
                 int ReturnX = 0;
                 float MinWidthInThisColumn = 0;
-                
+
                 foreach (var El in Element)
                     if (El.GetTag() != ElementType.Content && (El.GetResize().Width < MinWidthInThisColumn || MinWidthInThisColumn == 0))
                         MinWidthInThisColumn = El.GetResize().Width;
@@ -193,11 +195,13 @@ namespace Sharp
                     }
                     else
                     {
-                        Pos.Y += drawimages(El, Context, Limit, Pos).Y;
+                        var returned = drawimages(El, Context, Limit, Pos);
+                        Pos.Y += returned.Y;
+                        ReturnX += (int)returned.X;
                     }
                 }
 
-                return new RectangleF() { X = ReturnX };
+                return new RectangleF() { X = ReturnX, Y = Pos.Y };
             }
 
             return Pos;
