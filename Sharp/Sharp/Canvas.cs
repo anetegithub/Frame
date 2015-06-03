@@ -10,13 +10,14 @@ namespace Sharp
 {
     public static class Canvas
     {
-        private static int maxmax;
         public static async void Draw(IElement Element, int Width, Padding Padding, Action<bool> OnEnd)
         {
             bool result = await Task<bool>.Run(() =>
             {
                 float SumResizedWidth = 0;
                 int MinHeightInThisRow = 0;
+
+                Size Max = new Size(Width, int.MaxValue);
 
                 foreach (var El in Element)
                     if (El.GetSize().Height < MinHeightInThisRow || MinHeightInThisRow == 0)
@@ -27,14 +28,15 @@ namespace Sharp
 
                 var Multiple = Width / SumResizedWidth;
 
-                int Height = (int)(MinHeightInThisRow * Multiple);
+                int Height = Width;// (int)(MinHeightInThisRow * Multiple);
 
-                Bitmap canvas = new Bitmap(Width, Height);
+                Bitmap canvas = new Bitmap(Width*5,Height*5 );
                 Graphics context = Graphics.FromImage(canvas);
 
                 context.FillRectangle(Brushes.Orange, new RectangleF(0, 0, Width, Height));
-                float PlusX = 0;
-                drawimages3(Element, context, new SizeF(Width, Height), new RectangleF(), Padding, ref PlusX);
+
+                //drawimages3(Element, context, new SizeF(Width, Height), new RectangleF(), Padding);
+                drawimages(Element, context, new SizeF(Width, Height), new RectangleF());
 
                 canvas.Save("result.jpg");
 
@@ -42,85 +44,166 @@ namespace Sharp
             });
             OnEnd(result);
         }
-        
-        private static void drawimages3(IElement Element, Graphics Context, SizeF Max, RectangleF Start, Padding Padding,ref float PlusX)
+
+        static int row = 0;
+        static int col = 0;
+
+        #region hide
+        //private static void drawimages3(Element Element, Graphics Context, SizeF Max, RectangleF Start, Padding Padding)
+        //{
+        //    if (Element.GetTag() == ElementType.Row)
+        //    {
+        //        float SumResizedWidth = 0;
+        //        int MinHeightInThisRow = 0;
+
+        //        foreach (var El in Element)
+        //            if (El.GetResize(Max, row != 0).Height < MinHeightInThisRow || MinHeightInThisRow == 0)
+        //                MinHeightInThisRow = El.GetResize(Max, row != 0).Height;
+        //        row++;
+
+        //        foreach (var El in Element)
+        //            SumResizedWidth += El.Resized(int.MaxValue, MinHeightInThisRow).Width;
+
+        //        //var Multiple = Max.Width / SumResizedWidth;
+
+        //        foreach (var El in Element)
+        //        {
+        //            Image Img = new Bitmap(1, 1);
+
+        //            if (El.GetTag() == ElementType.Content)
+        //            {
+        //                Img = El.GetImage();
+
+        //                Img = Img.ScaleImage(int.MaxValue, MinHeightInThisRow);
+        //                Img = Img.ScaleImage(Img.Width, int.MaxValue);
+        //            }
+        //            else
+        //            {
+        //                Img = new Bitmap(El.GetResize(Max).Width, El.GetResize(Max).Height);
+        //            }
+
+        //            if (El.GetTag() == ElementType.Content)
+        //            {
+        //                Context.DrawImage(Img, Start.X, Start.Y, Img.Width, Img.Height);
+        //            }
+
+        //            if (El.GetTag() == ElementType.Column)
+        //            {
+        //                drawimages3((Element)El, Context, Img.Size, Start, Padding);
+        //            }
+
+        //            Start.X += Img.Width;
+        //        }
+        //    }
+        //    else if (Element.GetTag() == ElementType.Column)
+        //    {
+        //        var MinWidthInThisColumn = 0;
+        //        float SumResizedHeight = 0;
+
+        //        foreach (var El in Element)
+        //            if (El.GetResize(Max, col != 0).Height < MinWidthInThisColumn || MinWidthInThisColumn == 0)
+        //                MinWidthInThisColumn = El.GetResize(Max, col != 0).Height;
+
+        //        col++;
+
+        //        foreach (var El in Element)
+        //            SumResizedHeight += El.Resized(int.MaxValue, MinWidthInThisColumn).Height;
+
+        //        //var Multiple = Max.Height / SumResizedHeight;                
+
+        //        foreach (var El in Element)
+        //        {
+        //            Image Img = new Bitmap(El.GetResize(Max).Width, El.GetResize(Max).Height);
+
+        //            if (El.GetTag() == ElementType.Content)
+        //                Img = El.GetImage();
+
+        //            Img = Img.ScaleImage(MinWidthInThisColumn, int.MaxValue);
+        //            Img = Img.ScaleImage(int.MaxValue, Img.Height);
+
+        //            if (El.GetTag() == ElementType.Content)
+        //            {
+        //                Context.DrawImage(Img, Start.X, Start.Y, Img.Width, Img.Height);
+        //                Start.Y += Img.Height;
+        //            }
+
+        //            if (El.GetTag() == ElementType.Row)
+        //            {
+        //                drawimages3((Element)El, Context, Img.Size, Start, Padding);
+        //            }
+        //        }
+        //    }
+        //}
+        #endregion
+
+        private static RectangleF drawimages(IElement Element, Graphics Context, SizeF Limit, RectangleF Pos)
         {
             if (Element.GetTag() == ElementType.Row)
             {
-                float SumResizedWidth = 0;
-                int MinHeightInThisRow = 0;
+                int ReturnY = 0;
+                float MinHeightInThisRow = 0;
+
+                foreach (var El in Element)
+                    if (El.GetTag()!= ElementType.Content && (El.GetResize().Height < MinHeightInThisRow || MinHeightInThisRow == 0))
+                        MinHeightInThisRow = El.GetResize().Height;
                 
-
-                foreach (var El in Element)
-                    if (El.GetSize().Height < MinHeightInThisRow || MinHeightInThisRow == 0)
-                        MinHeightInThisRow = El.GetSize().Height;
-
-                foreach (var El in Element)
-                    SumResizedWidth += El.Resized(int.MaxValue, MinHeightInThisRow).Width;
-
-                var Multiple = Max.Width / SumResizedWidth;
+                if (MinHeightInThisRow==0)
+                    foreach (var El in Element)
+                        if (El.GetResize().Height < MinHeightInThisRow || MinHeightInThisRow == 0)
+                            MinHeightInThisRow = El.GetResize().Height;
 
                 foreach (var El in Element)
                 {
-                    Image Img = new Bitmap(El.GetSize().Width, El.GetSize().Height);
-
-                    if (El.GetTag() == ElementType.Content)
-                        Img = El.GetImage();
-
-                    Img = Img.ScaleImage(int.MaxValue, MinHeightInThisRow);
-                    Img = Img.ScaleImage(Img.Width * Multiple, int.MaxValue);
-
                     if (El.GetTag() == ElementType.Content)
                     {
-                        Context.DrawImage(Img, Start.X, Start.Y, Img.Width, Img.Height);
-                        PlusX += Img.Width;
+                        var img = El.GetImage();
+                        img = img.ScaleImage(Limit.Width, MinHeightInThisRow);
+                        Context.DrawImage(img, Pos.X, Pos.Y, img.Width, img.Height);
+                        ReturnY = img.Height;
+                        Pos.X += img.Width;
                     }
-
-                    if (El.GetTag() == ElementType.Column)
+                    else
                     {
-                        drawimages3(El, Context, Img.Size, Start, Padding, ref PlusX);                        
+                        Pos.X += drawimages(El, Context, Limit, Pos).X;
                     }
-                    
-                    Start.X += PlusX;
                 }
+
+                return new RectangleF() { Y = ReturnY };
             }
             else if (Element.GetTag() == ElementType.Column)
             {
-                var MinWidthInThisColumn = 0;
-                float SumResizedHeight = 0;
-
+                int ReturnX = 0;
+                float MinWidthInThisColumn = 0;
+                
                 foreach (var El in Element)
-                    if (El.GetSize().Height < MinWidthInThisColumn || MinWidthInThisColumn == 0)
-                        MinWidthInThisColumn = El.GetSize().Height;
+                    if (El.GetTag() != ElementType.Content && (El.GetResize().Width < MinWidthInThisColumn || MinWidthInThisColumn == 0))
+                        MinWidthInThisColumn = El.GetResize().Width;
 
-                foreach (var El in Element)
-                    SumResizedHeight += El.Resized(int.MaxValue, MinWidthInThisColumn).Height;
-
-                var Multiple = Max.Height / SumResizedHeight;                
+                if (MinWidthInThisColumn == 0)
+                    foreach (var El in Element)
+                        if (El.GetResize().Width < MinWidthInThisColumn || MinWidthInThisColumn == 0)
+                            MinWidthInThisColumn = El.GetResize().Width;
 
                 foreach (var El in Element)
                 {
-                    Image Img = new Bitmap(El.GetSize().Width, El.GetSize().Height);
-
-                    if (El.GetTag() == ElementType.Content)
-                        Img = El.GetImage();
-
-                    Img = Img.ScaleImage(MinWidthInThisColumn, int.MaxValue);
-                    Img = Img.ScaleImage(int.MaxValue,Img.Height* Multiple);
-
                     if (El.GetTag() == ElementType.Content)
                     {
-                        Context.DrawImage(Img, Start.X, Start.Y, Img.Width, Img.Height);
-                        Start.Y += Img.Height;
-                        PlusX += 0;
+                        var img = El.GetImage();
+                        img = img.ScaleImage(MinWidthInThisColumn, int.MaxValue);
+                        Context.DrawImage(img, Pos.X, Pos.Y, img.Width, img.Height);
+                        ReturnX = img.Width;
+                        Pos.Y += img.Height;
                     }
-
-                    if (El.GetTag() == ElementType.Row)
+                    else
                     {
-                        drawimages3(El, Context, Img.Size, Start, Padding,ref PlusX);
-                    }                    
+                        Pos.Y += drawimages(El, Context, Limit, Pos).Y;
+                    }
                 }
+
+                return new RectangleF() { X = ReturnX };
             }
+
+            return Pos;
         }
 
         public struct Padding

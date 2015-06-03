@@ -56,6 +56,95 @@ namespace Sharp
                    .FirstOrDefault();
         }
 
+        #region hide
+        //public Size GetResize(SizeF Max,bool Scale=false)
+        //{
+        //    Size Result = new Size();
+
+        //    if (this._ElementType == ElementType.Row)
+        //    {
+        //        var MinHeightInThisRow = 0;
+        //        float SumResizedWidth = 0;
+
+        //        foreach (var El in this)
+        //            if (El.GetResize(Max).Height < MinHeightInThisRow || MinHeightInThisRow == 0)
+        //                MinHeightInThisRow = El.GetResize(Max).Height;
+
+        //        foreach (var El in this)
+        //            SumResizedWidth += El.Resized(int.MaxValue, MinHeightInThisRow).Height;
+
+        //        //var Multiple = Max.Height / SumResizedHeight;
+
+        //        foreach (var El in this)
+        //        {
+        //            Image Img = new Bitmap(El.GetResize(Max).Width, El.GetResize(Max).Height);
+
+        //            if (El.GetTag() == ElementType.Content)
+        //                Img = El.GetImage();
+
+        //            Img = Img.ScaleImage(int.MaxValue, MinHeightInThisRow);
+        //            Img = Img.ScaleImage(Img.Width, int.MaxValue);
+
+        //            if (El.GetTag() == ElementType.Content)
+        //            {
+        //                Result.Height = Img.Height;
+        //                Result.Width += Img.Width;
+        //            }
+
+        //            if (El.GetTag() == ElementType.Row)
+        //            {
+        //                Result.Width += El.GetResize(Max).Width;
+        //            }
+        //        }
+        //    }
+        //    else if (_ElementType == ElementType.Column)
+        //    {
+        //        var MinWidthInThisColumn = 0;
+        //        float SumResizedHeight = 0;
+
+        //        foreach (var El in this)
+        //            if (El.GetResize(Max).Height < MinWidthInThisColumn || MinWidthInThisColumn == 0)
+        //                MinWidthInThisColumn = El.GetResize(Max).Height;
+
+        //        foreach (var El in this)
+        //            SumResizedHeight += El.Resized(int.MaxValue, MinWidthInThisColumn).Height;
+
+        //        //var Multiple = Max.Height / SumResizedHeight;
+
+        //        foreach (var El in this)
+        //        {
+        //            Image Img = new Bitmap(El.GetResize(Max).Width, El.GetResize(Max).Height);
+
+        //            if (El.GetTag() == ElementType.Content)
+        //                Img = El.GetImage();
+
+        //            Img = Img.ScaleImage(MinWidthInThisColumn, int.MaxValue);
+        //            Img = Img.ScaleImage(int.MaxValue, Img.Height);
+
+        //            if (El.GetTag() == ElementType.Content)
+        //            {
+        //                Result.Height += Img.Height;
+        //                Result.Width = Img.Width;
+        //            }
+
+        //            if (El.GetTag() == ElementType.Row)
+        //            {
+        //                Result.Height += El.GetResize(Max).Height;
+        //            }
+        //        }
+        //    }
+        //    else if (_ElementType == ElementType.Content)
+        //    {
+        //        if (Scale)
+        //            Result = InnerImg.ScaleImage(Max.Width, Max.Height).Size;
+        //        else
+        //            Result = InnerImg.Size;
+        //    }
+
+        //    return Result;
+        //}
+        #endregion
+
         public Image GetImage()
         {
             return InnerImg;
@@ -80,6 +169,77 @@ namespace Sharp
         public int CountInner()
         {
             return InnerMarkup.Count;
+        }
+
+        public SizeF GetResize()
+        {
+            if (_ElementType == ElementType.Row)
+            {
+                float MinHeightInThisRow = 0;
+
+                foreach (var El in this)
+                    if (El.GetTag() != ElementType.Content && (El.GetResize().Height < MinHeightInThisRow || MinHeightInThisRow == 0))
+                        MinHeightInThisRow = El.GetResize().Height;
+
+                if (MinHeightInThisRow == 0)
+                    foreach (var El in this)
+                        if (El.GetResize().Height < MinHeightInThisRow || MinHeightInThisRow == 0)
+                            MinHeightInThisRow = El.GetResize().Height;
+
+                float SumOfResizedWidth = 0,
+                    returnHeight = 0;
+
+                foreach (var El in this)
+                {
+                    if (El.GetTag() == ElementType.Content)
+                    {
+                        var img = El.GetImage();
+                        img = img.ScaleImage(int.MaxValue, MinHeightInThisRow);
+                        returnHeight = img.Height;
+                        SumOfResizedWidth += img.Width;
+                    }
+                    else
+                    {
+                        SumOfResizedWidth += El.GetResize().Width;
+                    }
+                }
+
+                return new SizeF(SumOfResizedWidth, returnHeight);
+            }
+            if (_ElementType == ElementType.Column)
+            {
+                float MinWidthInThisColumn = 0;
+
+                foreach (var El in this)
+                    if (El.GetTag() != ElementType.Content && (El.GetResize().Width < MinWidthInThisColumn || MinWidthInThisColumn == 0))
+                        MinWidthInThisColumn = El.GetResize().Width;
+
+                if (MinWidthInThisColumn == 0)
+                    foreach (var El in this)
+                        if (El.GetResize().Width < MinWidthInThisColumn || MinWidthInThisColumn == 0)
+                            MinWidthInThisColumn = El.GetResize().Width;
+
+                float SumOfResizedHeight = 0;
+
+                foreach (var El in this)
+                    if (El.GetTag() == ElementType.Content)
+                    {
+                        var img = El.GetImage();
+                        img = img.ScaleImage(MinWidthInThisColumn, int.MaxValue);
+                        SumOfResizedHeight += img.Height;
+                    }
+                    else
+                    {
+                        SumOfResizedHeight += El.GetResize().Height;
+                    }
+
+                return new SizeF(MinWidthInThisColumn, SumOfResizedHeight);
+            }
+            if (_ElementType == ElementType.Content)
+            {
+                return InnerImg.Size;
+            }
+            return new SizeF();
         }
     }
 
