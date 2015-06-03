@@ -43,11 +43,19 @@ namespace Sharp
             Console.ReadLine();
         }
 
+        /// <summary>
+        /// +
+        /// </summary>
+        /// <returns></returns>
         static IElement EasyCol()
         {
             return c1.Add(p1).Add(p2).Add(p3).Add(p3).Add(p4).Add(p5).Add(p6);
         }
 
+        /// <summary>
+        /// +
+        /// </summary>
+        /// <returns></returns>
         static IElement MediumCol()
         {
             r1.Add(p1).Add(p2);
@@ -55,11 +63,19 @@ namespace Sharp
             return c1.Add(p3).Add(r1).Add(r2).Add(p4);
         }
 
+        /// <summary>
+        /// +
+        /// </summary>
+        /// <returns></returns>
         static IElement EasyRow()
         {
             return r1.Add(p1).Add(p2).Add(p3).Add(p3).Add(p4).Add(p5).Add(p6);
         }
 
+        /// <summary>
+        /// +
+        /// </summary>
+        /// <returns></returns>
         static IElement MediumRow()
         {
             c1.Add(p4).Add(p2).Add(r2);
@@ -69,6 +85,10 @@ namespace Sharp
             return r1.Add(p5).Add(c1).Add(p4);
         }
 
+        /// <summary>
+        /// +
+        /// </summary>
+        /// <returns></returns>
         static IElement Example1()
         {
             r1.Add(p1).Add(c1).Add(p5);
@@ -80,16 +100,24 @@ namespace Sharp
             return r1;
         }
 
+        /// <summary>
+        /// -
+        /// </summary>
+        /// <returns></returns>
         static IElement Example1HALF()
         {
-            r1.Add(p1).Add(c1).Add(p5);
-            c1.Add(r2);//.Add(r3);
+            r1.Add(p1).Add(c1).Add(c2).Add(p5);
 
-            r2.Add(p3).Add(p3);
+            c1.Add(p1).Add(p2).Add(p6);
+            c2.Add(p1).Add(p2);
 
             return r1;
         }
 
+        /// <summary>
+        /// -
+        /// </summary>
+        /// <returns></returns>
         static IElement Example2()
         {
             r1.Add(p1).Add(c1).Add(c2).Add(p5);

@@ -15,7 +15,9 @@ namespace Sharp
             var newWidth = (int)(image.Width * ratio);
             var newHeight = (int)(image.Height * ratio);
 
-            var newImage = new Bitmap(newWidth, newHeight);
+            GC.Collect();
+
+            var newImage = new Bitmap(newWidth, newHeight,0, System.Drawing.Imaging.PixelFormat.Format16bppRgb565,IntPtr.Zero);
             Graphics.FromImage(newImage).DrawImage(image, 0, 0, newWidth, newHeight);
             return newImage;
         }
@@ -33,7 +35,7 @@ namespace Sharp
             return new SizeF(newWidth, newHeight);
         }
 
-        public static SizeF ResizeSize(this SizeF Size, float MaxWidth, float MaxHeigt)
+        public static SizeF ScaleSize(this Size Size, float MaxWidth, float MaxHeigt)
         {
             var ratioX = MaxWidth / Size.Width;
             var ratioY = MaxHeigt / Size.Height;
@@ -64,5 +66,14 @@ namespace Sharp
 
             return (Image)b;
         }        
+
+        public static bool InnerOnlyImage(this IElement Element)
+        {
+            if (Element.CountInner() == 1)
+                foreach (var El in Element)
+                    if (El.GetTag() == ElementType.Content)
+                        return true;
+            return false;
+        }
     }
 }

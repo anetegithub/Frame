@@ -193,8 +193,8 @@ namespace Sharp
                 {
                     if (El.GetTag() == ElementType.Content)
                     {
-                        var img = El.GetImage();
-                        img = img.ScaleImage(int.MaxValue, MinHeightInThisRow);                        
+                        var imgS = El.GetImage().Size;
+                        var img = imgS.ScaleSize(int.MaxValue, MinHeightInThisRow);                        
                         SumOfResizedWidth += img.Width;
                         HeighOfAllImages = img.Height;
                     }
@@ -227,8 +227,8 @@ namespace Sharp
                 foreach (var El in this)
                     if (El.GetTag() == ElementType.Content)
                     {
-                        var img = El.GetImage();
-                        img = img.ScaleImage(MinWidthInThisColumn, int.MaxValue);
+                        var imgS = El.GetImage().Size;
+                        var img = imgS.ScaleSize(MinWidthInThisColumn, int.MaxValue);
                         WidthOfAllImages = img.Width;
                         SumOfResizedHeight += img.Height;
                     }
