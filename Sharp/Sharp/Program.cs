@@ -28,11 +28,12 @@ namespace Sharp
                p3 = new Picture("2.jpg"),
                p4 = new Picture("3.jpg"),
                p5 = new Picture("4.jpg"),
-               p6 = new Picture("5.jpg");
+               p6 = new Picture("5.jpg"),
+                p7 = new Picture("6.jpg");
 
         static void Main(string[] args)
         {
-            Canvas.Draw(Example1HALF(),1000, new Canvas.Padding(0, 0, 0, 0),x=>
+            Canvas.Draw(Example2(),3000, new Canvas.Padding(0, 0, 0, 0),x=>
             {
                 if (x)
                     Console.WriteLine("Well done");
@@ -108,8 +109,10 @@ namespace Sharp
         {
             r1.Add(p1).Add(c1).Add(c2).Add(p5);
 
-            c1.Add(p1).Add(p2).Add(p6);
-            c2.Add(p1).Add(p2);
+            c1.Add(p1).Add(p2).Add(p3);
+            c2.Add(c3).Add(p2);
+
+            c3.Add(p7).Add(p7);
 
             return r1;
         }

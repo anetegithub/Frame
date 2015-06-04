@@ -75,5 +75,14 @@ namespace Sharp
                         return true;
             return false;
         }
+
+        public static bool HaveSomeTag(this IElement Element)
+        {
+            var SelfTag = Element.GetTag();
+            foreach (var El in Element)
+                if (El.GetTag() == SelfTag)
+                    return true;
+            return false;
+        }
     }
 }

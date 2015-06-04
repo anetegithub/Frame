@@ -25,7 +25,7 @@ namespace Sharp
                 Graphics context = Graphics.FromImage(canvas);
 
                 context.FillRectangle(Brushes.Orange, new RectangleF(0, 0, Width, Height));                
-                drawimages(Element, context, new RectangleF(),new SizeF());
+                drawimages(Element, context, new RectangleF(),new SizeF(),new SizeF());
 
                 var img = canvas.ScaleImage(Width, int.MaxValue);
 
@@ -127,115 +127,238 @@ namespace Sharp
         //}
         #endregion
 
-        private static RectangleF drawimages(IElement Element, Graphics Context, RectangleF Pos,SizeF Previos)
+        private static RectangleF drawimages(IElement Element, Graphics Context, RectangleF Pos, SizeF Previos, SizeF Limit)
         {
             if (Element.GetTag() == ElementType.Row)
             {
-                int ReturnY = 0;
-                int ReturnX = 0;
-                float MinHeightInThisRow = 0,
-                    PreviosBranches = 0;
-
-                //берём по самому минимальному
-                //foreach (var El in Element)
-                //    if (El.GetTag() != ElementType.Content && !El.InnerOnlyImage() && (El.GetResize().Height < MinHeightInThisRow || MinHeightInThisRow == 0))
-                //        MinHeightInThisRow = El.GetResize().Height;
-
-                //попробуем брать по самому внутреннему
-                foreach (var El in Element)
-                    if (El.GetTag() != ElementType.Content && !El.InnerOnlyImage())
-                        if (El.GetTree().Count() > PreviosBranches)
-                        {
-                            PreviosBranches = El.GetTree().Count();
-                            MinHeightInThisRow = El.GetResize().Height;
-                        }
-
-                if (MinHeightInThisRow == 0)
-                    foreach (var El in Element)
-                        if (El.GetResize().Height < MinHeightInThisRow || MinHeightInThisRow == 0)
-                            MinHeightInThisRow = El.GetResize().Height;
-                
-                foreach (var El in Element)
+                if (Limit.Width > 0)
                 {
-                    GC.Collect();
-                    if (El.GetTag() == ElementType.Content)
-                    {
-                        var img = El.GetImage();
-                        img = img.ScaleImage(int.MaxValue, MinHeightInThisRow);
+                    int ReturnX = 0,
+                        ReturnY = 0;
+                    float MinHeightInThisColumn = 0;
 
-                        if (Element.CountInner() == 1)
-                            img = img.ScaleImage(Previos.Width, int.MaxValue);
+                    //берём по самому минимальному
+                    foreach (var El in Element)
+                        if (El.GetTag() != ElementType.Content && !El.InnerOnlyImage() && (El.GetResize().Height < MinHeightInThisColumn || MinHeightInThisColumn == 0))
+                            MinHeightInThisColumn = El.GetResize().Height;
 
-                        Context.DrawImage(img, Pos.X, Pos.Y, img.Width, img.Height);
-                        ReturnY = img.Height;
-                        Pos.X += img.Width;
-                        //ReturnX += img.Width;
-                    }
-                    else
+                    if (MinHeightInThisColumn == 0)
+                        foreach (var El in Element)
+                            if (El.GetResize().Height < MinHeightInThisColumn || MinHeightInThisColumn == 0)
+                                MinHeightInThisColumn = El.GetResize().Height;
+
+                    float SumOfWidth = 0;
+
+                    foreach (var El in Element)
                     {
-                        Previos.Height = MinHeightInThisRow;
-                        var returned = drawimages(El, Context, Pos, Previos);
-                        //ReturnX = (int)returned.X;
-                        Pos.X += (int)returned.X;
-                        ReturnY += (int)returned.Y;
+                        GC.Collect();
+                        if (El.GetTag() == ElementType.Content)
+                        {
+                            SumOfWidth += El.GetImage().Size.ScaleSize(int.MaxValue, MinHeightInThisColumn).Width;
+                        }
                     }
+
+                    foreach (var El in Element)
+                    {
+                        GC.Collect();
+                        if (El.GetTag() == ElementType.Content)
+                        {
+                            var a = (float)El.GetImage().Size.ScaleSize(int.MaxValue,MinHeightInThisColumn).Width / SumOfWidth;
+                            var b = a * Limit.Width;
+                            var img = El.GetImage().ScaleImage(b,int.MaxValue);
+
+                            Context.DrawImage(img, Pos.X, Pos.Y, img.Width, img.Height);
+
+                            ReturnX = img.Width;
+                            ReturnY = img.Height;
+                            Pos.X += img.Width;
+                        }
+                    }
+
+                    return new RectangleF() { X = ReturnX, Y = ReturnY };
                 }
+                else
+                {
+                    int ReturnY = 0;
+                    int ReturnX = 0;
+                    float MinHeightInThisRow = 0,
+                        PreviosBranches = 0;
 
-                return new RectangleF() { Y = ReturnY, X = ReturnX };
+                    //берём по самому минимальному
+                    //foreach (var El in Element)
+                    //    if (El.GetTag() != ElementType.Content && !El.InnerOnlyImage() && (El.GetResize().Height < MinHeightInThisRow || MinHeightInThisRow == 0))
+                    //        MinHeightInThisRow = El.GetResize().Height;
+
+                    //попробуем брать по самому внутреннему
+                    foreach (var El in Element)
+                        if (El.GetTag() != ElementType.Content && !El.InnerOnlyImage())
+                            if (El.GetTree().Count() > PreviosBranches)
+                            {
+                                PreviosBranches = El.GetTree().Count();
+                                MinHeightInThisRow = El.GetResize().Height;
+                            }
+
+                    if (MinHeightInThisRow == 0)
+                        foreach (var El in Element)
+                            if (El.GetResize().Height < MinHeightInThisRow || MinHeightInThisRow == 0)
+                                MinHeightInThisRow = El.GetResize().Height;
+
+                    foreach (var El in Element)
+                    {
+                        GC.Collect();
+                        if (El.GetTag() == ElementType.Content)
+                        {
+                            var img = El.GetImage();
+                            img = img.ScaleImage(int.MaxValue, MinHeightInThisRow);
+
+                            if (Element.CountInner() == 1)
+                                img = img.ScaleImage(Previos.Width, int.MaxValue);
+
+                            Context.DrawImage(img, Pos.X, Pos.Y, img.Width, img.Height);
+                            ReturnY = img.Height;
+                            Pos.X += img.Width;
+                            ReturnX += img.Width;
+                        }
+                        else
+                        {
+                            Previos.Height = MinHeightInThisRow;
+
+                            //определяем нужен ли лимит этой колонке
+                            if (El.GetResize().Height < MinHeightInThisRow)
+                                Limit.Height = MinHeightInThisRow;
+                            else
+                                Limit.Height = 0;
+
+                            var returned = drawimages(El, Context, Pos, Previos, Limit);
+
+
+                            if (El.GetTag() == ElementType.Row)
+                                ReturnX += (int)returned.Y;
+
+                            //ReturnX = (int)returned.X;
+                            Pos.X += (int)returned.X;
+                            ReturnY = (int)returned.Y;
+                        }
+                    }
+
+                    return new RectangleF() { Y = ReturnY, X = ReturnX };
+                }
             }
             else if (Element.GetTag() == ElementType.Column)
             {
-                int ReturnX = 0;
-                int ReturnY = 0;
-                float MinWidthInThisColumn = 0,
-                    PreviosBranches = 0;
-
-                //берём по самому минимальному
-                //foreach (var El in Element)
-                //    if (El.GetTag() != ElementType.Content && !El.InnerOnlyImage() && (El.GetResize().Width < MinWidthInThisColumn || MinWidthInThisColumn == 0))
-                //        MinWidthInThisColumn = El.GetResize().Width;
-
-                //попробуем брать по самому внутреннему
-                foreach (var El in Element)
-                    if (El.GetTag() != ElementType.Content && !El.InnerOnlyImage())
-                        if (El.GetTree().Count() > PreviosBranches)
-                        {
-                            PreviosBranches = El.GetTree().Count();
-                            MinWidthInThisColumn = El.GetResize().Width;
-                        }
-
-                if (MinWidthInThisColumn == 0)
-                    foreach (var El in Element)
-                        if (El.GetResize().Width < MinWidthInThisColumn || MinWidthInThisColumn == 0)
-                            MinWidthInThisColumn = El.GetResize().Width;
-                
-                foreach (var El in Element)
+                if (Limit.Height > 0)
                 {
-                    GC.Collect();
-                    if (El.GetTag() == ElementType.Content)
-                    {
-                        var img = El.GetImage();
-                        img = img.ScaleImage(MinWidthInThisColumn, int.MaxValue);
+                    int ReturnX = 0,
+                        ReturnY = 0;
+                    float MinWidthInThisColumn = 0;
 
-                        if (Element.CountInner() == 1)
-                            img = img.ScaleImage(int.MaxValue, Previos.Height);
+                    //берём по самому минимальному
+                    foreach (var El in Element)
+                        if (El.GetTag() != ElementType.Content && !El.InnerOnlyImage() && (El.GetResize().Width < MinWidthInThisColumn || MinWidthInThisColumn == 0))
+                            MinWidthInThisColumn = El.GetResize().Width;
 
-                        Context.DrawImage(img, Pos.X, Pos.Y, img.Width, img.Height);
-                        ReturnX = img.Width;
-                        //ReturnY += img.Height;
-                        Pos.Y += img.Height;
-                    }
-                    else
+                    if (MinWidthInThisColumn == 0)
+                        foreach (var El in Element)
+                            if (El.GetResize().Width < MinWidthInThisColumn || MinWidthInThisColumn == 0)
+                                MinWidthInThisColumn = El.GetResize().Width;
+
+                    float SumOfHeight = 0;
+
+                    foreach(var El in Element)
                     {
-                        Previos.Width = MinWidthInThisColumn;                        
-                        var returned = drawimages(El, Context, Pos, Previos);
-                        //ReturnY += (int)returned.Y;
-                        Pos.Y += (int)returned.Y;
-                        ReturnX += (int)returned.X;
+                        GC.Collect();
+                        if(El.GetTag()== ElementType.Content)
+                        {
+                            SumOfHeight += El.GetImage().Size.ScaleSize(MinWidthInThisColumn, int.MaxValue).Height;
+                        }
                     }
+
+                    foreach (var El in Element)
+                    {
+                        GC.Collect();
+                        if (El.GetTag() == ElementType.Content)
+                        {
+                            var a = (float)El.GetImage().Size.ScaleSize(MinWidthInThisColumn, int.MaxValue).Height / SumOfHeight;
+                            var b = a * Limit.Height;
+                            var img = El.GetImage().ScaleImage(int.MaxValue, b);
+
+                            Context.DrawImage(img, Pos.X, Pos.Y, img.Width, img.Height);
+
+                            ReturnX = img.Width;
+                            ReturnY = img.Height;
+                            Pos.Y += img.Height;
+                        }
+                    }
+
+                    return new RectangleF() { X = ReturnX, Y = ReturnY };
                 }
+                else
+                {
 
-                return new RectangleF() { X = ReturnX, Y = ReturnY };
+                    int ReturnX = 0;
+                    int ReturnY = 0;
+                    float MinWidthInThisColumn = 0,
+                        PreviosBranches = 0;
+
+                    //берём по самому минимальному
+                    //foreach (var El in Element)
+                    //    if (El.GetTag() != ElementType.Content && !El.InnerOnlyImage() && (El.GetResize().Width < MinWidthInThisColumn || MinWidthInThisColumn == 0))
+                    //        MinWidthInThisColumn = El.GetResize().Width;
+
+                    //попробуем брать по самому внутреннему
+                    foreach (var El in Element)
+                        if (El.GetTag() != ElementType.Content && !El.InnerOnlyImage())
+                            if (El.GetTree().Count() > PreviosBranches)
+                            {
+                                PreviosBranches = El.GetTree().Count();
+                                MinWidthInThisColumn = El.GetResize().Width;
+                            }
+
+                    if (MinWidthInThisColumn == 0)
+                        foreach (var El in Element)
+                            if (El.GetResize().Width < MinWidthInThisColumn || MinWidthInThisColumn == 0)
+                                MinWidthInThisColumn = El.GetResize().Width;
+
+                    foreach (var El in Element)
+                    {
+                        GC.Collect();
+                        if (El.GetTag() == ElementType.Content)
+                        {
+                            var img = El.GetImage();
+                            img = img.ScaleImage(MinWidthInThisColumn, int.MaxValue);
+
+                            if (Element.CountInner() == 1)
+                                img = img.ScaleImage(int.MaxValue, Previos.Height);
+
+                            Context.DrawImage(img, Pos.X, Pos.Y, img.Width, img.Height);
+                            ReturnX = img.Width;
+
+                            ReturnY += img.Height;
+
+                            Pos.Y += img.Height;
+                        }
+                        else
+                        {
+                            Previos.Width = MinWidthInThisColumn;
+
+                            //определяем нужен ли лимит этой строке
+                            if (El.GetResize().Width > MinWidthInThisColumn)
+                                Limit.Width = MinWidthInThisColumn;
+                            else
+                                Limit.Width = 0;
+
+                            var returned = drawimages(El, Context, Pos, Previos, Limit);
+
+                            if (El.GetTag() == ElementType.Row)
+                                ReturnY += (int)returned.Y;
+
+                            Pos.Y += (int)returned.Y;
+                            ReturnX += (int)returned.X;
+                        }
+                    }
+
+                    return new RectangleF() { X = ReturnX, Y = ReturnY };
+                }
             }
 
             return Pos;

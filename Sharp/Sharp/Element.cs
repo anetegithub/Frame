@@ -175,11 +175,22 @@ namespace Sharp
         {
             if (_ElementType == ElementType.Row)
             {
-                float MinHeightInThisRow = 0;
+                float MinHeightInThisRow = 0,
+                    PreviosBranches = 0;
 
+                //берём по минимальному
+                //foreach (var El in this)
+                //    if (El.GetTag() != ElementType.Content && (El.GetResize().Height < MinHeightInThisRow || MinHeightInThisRow == 0))
+                //        MinHeightInThisRow = El.GetResize().Height;
+
+                //попроуем брать по самому внутреннему
                 foreach (var El in this)
-                    if (El.GetTag() != ElementType.Content && (El.GetResize().Height < MinHeightInThisRow || MinHeightInThisRow == 0))
-                        MinHeightInThisRow = El.GetResize().Height;
+                    if (El.GetTag() != ElementType.Content && !El.InnerOnlyImage())
+                        if (El.GetTree().Count() > PreviosBranches)
+                        {
+                            PreviosBranches = El.GetTree().Count();
+                            MinHeightInThisRow = El.GetResize().Height;
+                        }
 
                 if (MinHeightInThisRow == 0)
                     foreach (var El in this)
@@ -210,11 +221,22 @@ namespace Sharp
             }
             if (_ElementType == ElementType.Column)
             {
-                float MinWidthInThisColumn = 0;
+                float MinWidthInThisColumn = 0,
+                    PreviosBranches=0;
 
+                //берём по самому минимальному
+                //foreach (var El in this)
+                //    if (El.GetTag() != ElementType.Content && (El.GetResize().Width < MinWidthInThisColumn || MinWidthInThisColumn == 0))
+                //        MinWidthInThisColumn = El.GetResize().Width;
+
+                //попробуем брать по самому внутреннему
                 foreach (var El in this)
-                    if (El.GetTag() != ElementType.Content && (El.GetResize().Width < MinWidthInThisColumn || MinWidthInThisColumn == 0))
-                        MinWidthInThisColumn = El.GetResize().Width;
+                    if (El.GetTag() != ElementType.Content && !El.InnerOnlyImage())
+                        if (El.GetTree().Count() > PreviosBranches)
+                        {
+                            PreviosBranches = El.GetTree().Count();
+                            MinWidthInThisColumn = El.GetResize().Width;
+                        }
 
                 if (MinWidthInThisColumn == 0)
                     foreach (var El in this)
