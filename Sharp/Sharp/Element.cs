@@ -269,6 +269,12 @@ namespace Sharp
             }
             return new SizeF();
         }
+
+        public string Identificator;
+        public string GetIdentificator()
+        {
+            return Identificator;
+        }
     }
 
     public class Row : Element

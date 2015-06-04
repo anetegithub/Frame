@@ -11,7 +11,7 @@ namespace Sharp
         Size GetMaxSize();
         Size GetMinSize();
         Size GetSize();
-        //        Size GetResize(SizeF Max,bool Scale=false);
+        string GetIdentificator();
         SizeF GetResize();
         ElementType GetTag();
         IEnumerable<IElement> GetTree();

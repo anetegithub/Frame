@@ -21,7 +21,7 @@ namespace Sharp
 
                 int Height = Width;// (int)(MinHeightInThisRow * Multiple);
 
-                Bitmap canvas = new Bitmap((int)maxWidth, (int)maxHeight, 0, System.Drawing.Imaging.PixelFormat.Format16bppRgb565, IntPtr.Zero);
+                Bitmap canvas = new Bitmap((int)maxWidth*2, (int)maxHeight*2, 0, System.Drawing.Imaging.PixelFormat.Format16bppRgb565, IntPtr.Zero);
                 Graphics context = Graphics.FromImage(canvas);
 
                 context.FillRectangle(Brushes.Orange, new RectangleF(0, 0, Width, Height));                
@@ -144,6 +144,7 @@ namespace Sharp
 
                     if (MinHeightInThisColumn == 0)
                         foreach (var El in Element)
+                            if(El.GetResize().Height!=0)
                             if (El.GetResize().Height < MinHeightInThisColumn || MinHeightInThisColumn == 0)
                                 MinHeightInThisColumn = El.GetResize().Height;
 
@@ -197,11 +198,17 @@ namespace Sharp
                                 PreviosBranches = El.GetTree().Count();
                                 MinHeightInThisRow = El.GetResize().Height;
                             }
-
+                    
+                    //из самых внутренних определить какой меньший если у них одинаковый уровень вложенности
+                    var ElementsWithSameBranches = Element.Where(x => x.GetTag() != ElementType.Content).Where(x => !x.InnerOnlyImage()).Where(x => x.GetTree().Count() == PreviosBranches);
+                    if (ElementsWithSameBranches.Count() > 1)
+                        MinHeightInThisRow = ElementsWithSameBranches.Min(x => x.GetResize().Height);
+                    
                     if (MinHeightInThisRow == 0)
                         foreach (var El in Element)
-                            if (El.GetResize().Height < MinHeightInThisRow || MinHeightInThisRow == 0)
-                                MinHeightInThisRow = El.GetResize().Height;
+                            if (El.GetResize().Height != 0)
+                                if (El.GetResize().Height < MinHeightInThisRow || MinHeightInThisRow == 0)
+                                MinHeightInThisRow = El.GetResize().Height;                    
 
                     foreach (var El in Element)
                     {
@@ -231,13 +238,29 @@ namespace Sharp
 
                             var returned = drawimages(El, Context, Pos, Previos, Limit);
 
+                            if (Limit.Height == 0)
+                            {
 
-                            if (El.GetTag() == ElementType.Row)
-                                ReturnX += (int)returned.Y;
+                                if (El.GetTag() == ElementType.Column)
+                                    ReturnX += (int)El.GetResize().Width;//(int)returned.X;
 
-                            //ReturnX = (int)returned.X;
-                            Pos.X += (int)returned.X;
-                            ReturnY = (int)returned.Y;
+                                Pos.X += El.GetResize().Width;//(int)returned.X;
+
+                                //Pos.X += (int)returned.X;
+
+                                ReturnY = (int)El.GetResize().Height;//(int)returned.Y;
+                            }
+                            else
+                            {
+                                if (El.GetTag() == ElementType.Column)
+                                    ReturnX += (int)returned.X;
+
+                                Pos.X += (int)returned.X;
+
+                                //Pos.X += (int)returned.X;
+
+                                ReturnY = (int)returned.Y;
+                            }
                         }
                     }
 
@@ -259,7 +282,8 @@ namespace Sharp
 
                     if (MinWidthInThisColumn == 0)
                         foreach (var El in Element)
-                            if (El.GetResize().Width < MinWidthInThisColumn || MinWidthInThisColumn == 0)
+                            if (El.GetResize().Width != 0)
+                                if (El.GetResize().Width < MinWidthInThisColumn || MinWidthInThisColumn == 0)
                                 MinWidthInThisColumn = El.GetResize().Width;
 
                     float SumOfHeight = 0;
@@ -314,9 +338,15 @@ namespace Sharp
                                 MinWidthInThisColumn = El.GetResize().Width;
                             }
 
+                    //из самых внутренних определить какой меньший если у них одинаковый уровень вложенности
+                    var ElementsWithSameBranches = Element.Where(x => x.GetTag() != ElementType.Content).Where(x => !x.InnerOnlyImage()).Where(x => x.GetTree().Count() == PreviosBranches);
+                    if (ElementsWithSameBranches.Count() > 1)
+                        MinWidthInThisColumn = ElementsWithSameBranches.Min(x => x.GetResize().Width);
+
                     if (MinWidthInThisColumn == 0)
                         foreach (var El in Element)
-                            if (El.GetResize().Width < MinWidthInThisColumn || MinWidthInThisColumn == 0)
+                            if (El.GetResize().Width != 0)
+                                if (El.GetResize().Width < MinWidthInThisColumn || MinWidthInThisColumn == 0)
                                 MinWidthInThisColumn = El.GetResize().Width;
 
                     foreach (var El in Element)
@@ -349,11 +379,22 @@ namespace Sharp
 
                             var returned = drawimages(El, Context, Pos, Previos, Limit);
 
-                            if (El.GetTag() == ElementType.Row)
-                                ReturnY += (int)returned.Y;
+                            if (Limit.Width == 0)
+                            {
+                                if (El.GetTag() == ElementType.Row)
+                                    ReturnY += (int)El.GetResize().Height;//returned.Y;
 
-                            Pos.Y += (int)returned.Y;
-                            ReturnX += (int)returned.X;
+                                Pos.Y += (int)El.GetResize().Height;//returned.Y;
+                                ReturnX += (int)El.GetResize().Width;//returned.X;
+                            }
+                            else
+                            {
+                                if (El.GetTag() == ElementType.Row)
+                                    ReturnY += (int)returned.Y;
+
+                                Pos.Y += (int)returned.Y;
+                                ReturnX += (int)returned.X;
+                            }
                         }
                     }
 
