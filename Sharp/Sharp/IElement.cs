@@ -13,12 +13,12 @@ namespace Sharp
         Size GetSize();
         string GetIdentificator();
         SizeF GetResize();
-        ElementType GetTag();
+        Tag GetTag();
         IEnumerable<IElement> GetTree();
         int CountInner();
     }
 
-    public enum ElementType
+    public enum Tag
     {
         Content = 0,
         Row,

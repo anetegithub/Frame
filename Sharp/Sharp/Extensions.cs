@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Linq;
 
 namespace Sharp
 {
@@ -35,7 +36,7 @@ namespace Sharp
             return new SizeF(newWidth, newHeight);
         }
 
-        public static SizeF ScaleSize(this Size Size, float MaxWidth, float MaxHeigt)
+        public static SizeF ScaleSize(this SizeF Size, float MaxWidth, float MaxHeigt)
         {
             var ratioX = MaxWidth / Size.Width;
             var ratioY = MaxHeigt / Size.Height;
@@ -45,6 +46,11 @@ namespace Sharp
             var newHeight = Size.Height * ratio;
 
             return new SizeF(newWidth, newHeight);
+        }
+
+        public static SizeF ScaleSize(this Size Size, float MaxWidth, float MaxHeigt)
+        {
+            return new SizeF(Size.Width, Size.Height).ScaleSize(MaxWidth, MaxHeigt);
         }
 
         public static Image ScaleImageByWidth(this Image imgToResize, float width)
@@ -65,23 +71,43 @@ namespace Sharp
             g.Dispose();
 
             return (Image)b;
-        }        
+        }
 
-        public static bool InnerOnlyImage(this IElement Element)
+        public static int GetTreeCount(this Element Element)
+        {
+            var ElementCount = (from x in Element.GetTree() where x.GetImage() != null select x).Count();
+
+            return ElementCount;
+        }
+
+        public static bool InnerOnlyImage(this Element Element)
         {
             if (Element.CountInner() == 1)
                 foreach (var El in Element)
-                    if (El.GetTag() == ElementType.Content)
+                    if (El.GetTag() == Tag.Content)
                         return true;
             return false;
         }
 
-        public static bool HaveSomeTag(this IElement Element)
+        public static bool HaveSomeTag(this Element Element)
         {
             var SelfTag = Element.GetTag();
             foreach (var El in Element)
                 if (El.GetTag() == SelfTag)
                     return true;
+            return false;
+        }        
+
+        public static bool IsLimited(this Element Element,SizeF Limited)
+        {
+            if (Element.Tag == Tag.Row)
+                if (Limited.Height != 0)
+                    return true;
+
+            if (Element.Tag == Tag.Column)
+                if (Limited.Width != 0)
+                    return true;
+
             return false;
         }
     }
